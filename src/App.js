@@ -99,7 +99,7 @@ setEmpleadoSeleccionado(elemento);
     var dataNueva = data;
     dataNueva.push(valorInsertar);
     tutorialsRef.push({
-      id: tutorialsRef.id,
+      id: valorInsertar.id,
       fotografia: valorInsertar.fotografia,
       nombre: valorInsertar.nombre,
       edad : valorInsertar.edad,
