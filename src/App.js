@@ -7,10 +7,25 @@ import  'firebase/compat/database';
 import "firebase/compat/auth";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {Modal, ModalBody, ModalHeader, ModalFooter} from 'reactstrap';
-function App() {
-  var tutorialsRef = firebase.database().ref("/empleados");
+var tutorialsRef = firebase.database().ref("/empleados");
 
-  const dataEmpleados = [];
+const dataEmpleados = [];
+  tutorialsRef.once('value', function(snapshot) {
+    snapshot.forEach(function(childSnapshot) {
+      var key = childSnapshot.key;
+      var data = childSnapshot.val();
+      const person = {
+            id: key,
+            fotografia: data.fotografia,
+            nombre: data.nombre,
+            edad: data.edad,
+            sexo: data.sexo,
+            salario: data.salario
+          }
+          dataEmpleados.push(person);  
+    });
+  });
+function App() {
 
   const [data, setData] = useState(dataEmpleados);
   const [modalEditar, setModalEditar] = useState(false);
@@ -23,7 +38,7 @@ function App() {
     nombre: '',
     edad: '',
     sexo: '',
-    salario: '',
+    salario: ''
   });
 
   const seleccionarEmpleado=(elemento, caso)=>{
@@ -62,26 +77,39 @@ setEmpleadoSeleccionado(elemento);
       };
     });
   };
- 
+  
   const editar=()=>{
     var dataNueva=data;
     dataNueva.map(empleado=>{
-      if(empleado.id===empleadoSeleccionado.id){
         empleado.fotografia=empleadoSeleccionado.fotografia;
         empleado.nombre=empleadoSeleccionado.nombre;
         empleado.edad=empleadoSeleccionado.edad;
         empleado.sexo=empleadoSeleccionado.sexo;
         empleado.salario=empleadoSeleccionado.salario;
         empleado.opciones=empleadoSeleccionado.opciones;
-      }
+        tutorialsRef.child(empleado.id).update({
+          id: empleado.id,
+          fotografia: empleado.fotografia,
+          nombre: empleado.nombre,
+          edad: empleado.edad,
+          sexo: empleado.sexo,
+          salario: empleado.salario
+        });
     });
+    
     setData(dataNueva);
     setModalEditar(false);
   }
 
   const eliminar =()=>{
+    data.map(empleado=>{
+      if(empleado.id===empleadoSeleccionado.id){
+        tutorialsRef.child(empleado.id).remove();
+      }
+    });
     setData(data.filter(empleado=>empleado.id!==empleadoSeleccionado.id));
     setModalEliminar(false);
+
   }
 
   const abrirModalInsertar=()=>{
@@ -116,7 +144,7 @@ setEmpleadoSeleccionado(elemento);
     <br />
       <h2>LISTA DE EMPLEADOS</h2>
     <br />
-      <table className="table table-bordered">
+      <table className="table table-bordered" id="lista-Empleados">
         <thead>
           <tr>
             <th>Clave</th>
